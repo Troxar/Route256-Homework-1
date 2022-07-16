@@ -1,6 +1,5 @@
-﻿using System.Text.Encodings.Web;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
-using System.Text.Unicode;
 using AutoFixture;
 using JetBrains.Annotations;
 using Ozon.ConsoleApp.Entities;
@@ -97,7 +96,7 @@ internal sealed class GenerateProductsHandler
         if (!Directory.Exists(directory))
             Directory.CreateDirectory(directory!);
 
-        var json = JsonSerializer.Serialize(product, GetJsonSerializerOptions());
+        var json = JsonSerializer.Serialize(product, JsonHelper.GetJsonSerializerOptions());
         File.WriteAllText(path, json);
     }
 
@@ -115,15 +114,5 @@ internal sealed class GenerateProductsHandler
         return Path.Combine(StoragePath, $"{id}.{_fileExtension}");
     }
 
-    private static JsonSerializerOptions GetJsonSerializerOptions()
-    {
-        return new JsonSerializerOptions
-        {
-            Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic),
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = true
-        };
-    }
-
-    public record Request(int? Count);
+    public record Request([Display(Name = "count")] int? Count);
 }
