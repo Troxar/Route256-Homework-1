@@ -8,13 +8,19 @@ namespace App.Tests;
 
 public class AddNewClientHandlerTests
 {
+    private Gender GetRandomGender()
+    {
+        Random random = new();
+        var maxValue= Enum.GetValues(typeof(Gender)).Length;
+        return (Gender)random.Next(0, maxValue);
+    }
+    
     [Fact]
     public void Handle_WhenPassName_ShouldSaveClient()
     {
         // Arrange
-        Random random = new();
         var request = new Fixture().Build<IAddNewClientHandler.Request>()
-            .With(x => x.Gender, ((Gender)random.Next(0, 3)).ToString())
+            .With(x => x.Gender, GetRandomGender().ToString())
             .Create();
         
         var mock = new Mock<IClientStorage>();
