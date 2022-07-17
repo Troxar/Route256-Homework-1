@@ -19,12 +19,12 @@ internal interface IGetProductsHandler
 [UsedImplicitly]
 internal sealed class GetProductsHandler : IGetProductsHandler
 {
-    private readonly ProductStorage _productStorage;
-    private readonly ClientStorage _clientStorage;
+    private readonly IProductStorage _productStorage;
+    private readonly IClientStorage _clientStorage;
 
     public GetProductsHandler(
-        ProductStorage productStorage,
-        ClientStorage clientStorage)
+        IProductStorage productStorage,
+        IClientStorage clientStorage)
     {
         _productStorage = productStorage;
         _clientStorage = clientStorage;
@@ -63,15 +63,15 @@ internal sealed class GetProductsHandler : IGetProductsHandler
                 points++;
                 break;
             
-            case > 15 and < 21 when product.Age is Ages.Teenager:
+            case >= 15 and < 21 when product.Age is Ages.Teenager:
                 points++;
                 break;
             
-            case > 21 and < 55 when product.Age is Ages.Adult or Ages.Old:
+            case >= 21 and < 55 when product.Age is Ages.Adult or Ages.Old:
                 points++;
                 break;
 
-            case > 55 when product.Age is Ages.Old:
+            case >= 55 when product.Age is Ages.Old:
                 points++;
                 break;
         }

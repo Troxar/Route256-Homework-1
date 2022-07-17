@@ -6,6 +6,7 @@ namespace Ozon.ConsoleApp.Services;
 public interface IClientStorage
 {
     void Save(Client client);
+    Client? GetClientByNameOrDefault(string requestClientName);
 }
 
 public class ClientStorage : IClientStorage
