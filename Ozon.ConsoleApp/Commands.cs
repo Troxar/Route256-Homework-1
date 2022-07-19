@@ -13,6 +13,7 @@ public class Commands
         yield return CreateCreateClientCommand();
         yield return CreateUpdateProductsCommand();
         yield return CreateGetProductsCommand();
+        yield return CreatePutProductCommand();
     }
     
     private static Command CreateUpdateProductsCommand()
@@ -60,6 +61,20 @@ public class Commands
     {
         var customerCommand = new Command("exit", "exit from program");
         customerCommand.SetHandler(x => cts.Cancel());
+        return customerCommand;
+    }
+    
+    private static Command CreatePutProductCommand()
+    {
+        var customerCommand = new Command("put-product");
+
+        customerCommand.SetRequestHandler<IPutProductHandler.Request>(x =>
+        {
+            var handler = new PutProductHandler(new ProductStorage(), new WarehouseStorage());
+            handler.Handle(x);
+            Console.WriteLine("Success!");
+        });
+        
         return customerCommand;
     }
     

@@ -8,11 +8,19 @@ namespace Ozon.ConsoleApp.Services;
 public interface IProductStorage
 {
     IEnumerable<Product> GetAll();
+    Product? GetProductByIdOrDefault(int requestId);
 }
+
 internal sealed class ProductStorage : IProductStorage
 {
+    private const string FileName = "product.json";
     private const string StoragePath = $"{Program.StoragePath}/Products";
-
+    
+    private string GetFilePath(int id)
+    {
+        return Path.Combine(StoragePath, $"{id}.{FileName}");
+    }
+    
     public IEnumerable<Product> GetAll()
     {
         if (!Directory.Exists(StoragePath))
@@ -46,5 +54,16 @@ internal sealed class ProductStorage : IProductStorage
         {
             return null;
         }
+    }
+    
+    public Product? GetProductByIdOrDefault(int requestId)
+    {
+        var path = GetFilePath(requestId);
+        
+        if (!File.Exists(path))
+            return null;
+        
+        var json = File.ReadAllText(path);
+        return TryGetFromJsonOrDefault(json);
     }
 }
