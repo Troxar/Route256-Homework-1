@@ -14,6 +14,7 @@ public class Commands
         yield return CreateUpdateProductsCommand();
         yield return CreateGetProductsCommand();
         yield return CreatePutProductCommand();
+        yield return CreateGetProductsFromStorageCommand();
     }
     
     private static Command CreateUpdateProductsCommand()
@@ -73,6 +74,20 @@ public class Commands
             var handler = new PutProductHandler(new ProductStorage(), new WarehouseStorage());
             handler.Handle(x);
             Console.WriteLine("Success!");
+        });
+        
+        return customerCommand;
+    }
+    
+    private static Command CreateGetProductsFromStorageCommand()
+    {
+        var customerCommand = new Command("get-products-from-storage");
+
+        customerCommand.SetRequestHandler<IGetProductsFromStorageHandler.Request>(x =>
+        {
+            var handler = new GetProductsFromStorageHandler(new WarehouseStorage());
+            var products = handler.Handle(x);
+            WriteResponse(products);
         });
         
         return customerCommand;
