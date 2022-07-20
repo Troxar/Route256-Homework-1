@@ -5,11 +5,7 @@ using Ozon.ConsoleApp.Entities;
 
 namespace Ozon.ConsoleApp.Services;
 
-public interface IProductStorage
-{
-    IEnumerable<Product> GetAll();
-}
-internal sealed class ProductStorage : IProductStorage
+internal sealed class ProductStorage
 {
     private const string StoragePath = $"{Program.StoragePath}/Products";
 
