@@ -69,7 +69,7 @@ public class Commands
     {
         var customerCommand = new Command("put-product");
 
-        customerCommand.SetRequestHandler<IPutProductHandler.Request>(x =>
+        customerCommand.SetRequestHandler<PutProductRequest>(x =>
         {
             var handler = new PutProductHandler(new ProductStorage(), new WarehouseStorage());
             handler.Handle(x);

@@ -16,7 +16,7 @@ public class PutProductHandlerTests
     public void Handle_WhenProductIdIsOkAndCellIsFree_ShouldSaveCell()
     {
         //Arrange
-        var request = new IPutProductHandler.Request { ProductId = 1, Row = 1, Shelf = 1, Rack = 1 };
+        var request = new PutProductRequest { ProductId = 1, Row = 1, Shelf = 1, Rack = 1 };
         _mockProductStorage.Setup(x => x.GetProductByIdOrDefault(It.IsAny<int>()))
             .Returns(new Product("p1"));
         _mockWarehouseStorage.Setup(x => x.GetCellByAddressOrDefault(It.IsAny<CellAddress>()))
@@ -34,7 +34,7 @@ public class PutProductHandlerTests
     public void Handle_WhenCellIsOccupied_ShouldThrowException()
     {
         //Arrange
-        var request = new IPutProductHandler.Request { ProductId = 1, Row = 1, Shelf = 1, Rack = 1 };
+        var request = new PutProductRequest { ProductId = 1, Row = 1, Shelf = 1, Rack = 1 };
         _mockProductStorage.Setup(x => x.GetProductByIdOrDefault(It.IsAny<int>()))
             .Returns(new Product("p1"));
         _mockWarehouseStorage.Setup(x => x.GetCellByAddressOrDefault(It.IsAny<CellAddress>()))
@@ -49,7 +49,7 @@ public class PutProductHandlerTests
     public void Handle_WhenProductIdIsWrong_ShouldThrowException()
     {
         //Arrange
-        var request = new IPutProductHandler.Request { ProductId = 1, Row = 1, Shelf = 1, Rack = 1 };
+        var request = new PutProductRequest { ProductId = 1, Row = 1, Shelf = 1, Rack = 1 };
         _mockProductStorage.Setup(x => x.GetProductByIdOrDefault(It.IsAny<int>()))
             .Returns((Product?)null);
         var cut = new PutProductHandler(_mockProductStorage.Object, _mockWarehouseStorage.Object);
@@ -66,7 +66,7 @@ public class PutProductHandlerTests
     public void Handle_WhenRequestParameterIsNull_ShouldThrowException(int? productId, int? row, int? shelf, int? rack)
     {
         //Arrange
-        var request = new IPutProductHandler.Request { ProductId = productId, Row = row, Shelf = shelf, Rack = rack };
+        var request = new PutProductRequest { ProductId = productId, Row = row, Shelf = shelf, Rack = rack };
         var cut = new PutProductHandler(_mockProductStorage.Object, _mockWarehouseStorage.Object);
         
         //Assert

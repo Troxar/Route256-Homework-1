@@ -1,30 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
+using Ozon.ConsoleApp.Abstractions;
 using Ozon.ConsoleApp.Entities;
 using Ozon.ConsoleApp.Exceptions;
 using Ozon.ConsoleApp.Services;
 
 namespace Ozon.ConsoleApp.Handlers;
-
-internal interface IPutProductHandler
-{
-    void Handle(IPutProductHandler.Request request);
-    
-    public class Request
-    {
-        [Display(Name = "product-id")]
-        public int? ProductId { get; set; }
-    
-        [Display(Name = "row")]
-        public int? Row { get; set;  }
-
-        [Display(Name = "shelf")]
-        public int? Shelf { get; set;  }
-    
-        [Display(Name = "rack")]
-        public int? Rack { get; set;  }
-    }
-}
 
 [UsedImplicitly]
 internal sealed class PutProductHandler : IPutProductHandler
@@ -40,7 +20,7 @@ internal sealed class PutProductHandler : IPutProductHandler
         _warehouseStorage = warehouseStorage;
     }
 
-    public void Handle(IPutProductHandler.Request request)
+    public void Handle(PutProductRequest request)
     {
         ArgumentNullException.ThrowIfNull(request.ProductId);
         ArgumentNullException.ThrowIfNull(request.Row);
