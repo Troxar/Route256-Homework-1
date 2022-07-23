@@ -2,6 +2,7 @@
 using Ozon.ConsoleApp.Entities;
 using Ozon.ConsoleApp.Handlers;
 using Ozon.ConsoleApp.Services;
+using System.Collections;
 
 namespace App.Tests;
 
@@ -14,7 +15,6 @@ public class GetProductsHandlerTests
         var productList = new List<Product>
         {
             new ("p01"),
-            //new ("p02") { IsSponsored = true },
             new ("p03") { IsSponsored = true, Gender = Gender.Male },
             new ("p04") { IsSponsored = true, Gender = Gender.Female },
             new ("p05") { Age = Ages.Children, Gender = Gender.Male },
@@ -34,13 +34,14 @@ public class GetProductsHandlerTests
             .Returns(productList);
     }
     
-    [Fact]
-    public void Handle_WhenPassChildren_ShouldGetProductsInTheRightOrder()
+    [Theory]
+    [ClassData(typeof(DataForTheoryWhenPassClientShouldGetAppropriateOrderOfProducts))]
+    public void Handle_WhenPassClient_ShouldGetAppropriateOrderOfProducts(Client client, string[] expectedNames)
     {
         // Arrange
         var mockClientStorage = new Mock<IClientStorage>();
         mockClientStorage.Setup(x => x.GetClientByNameOrDefault(It.IsAny<string>()))
-            .Returns(new Client("Joe", Gender.Male, 5, "Soccer"));
+            .Returns(client);
         var request = new IGetProductsHandler.Request { ClientName = "_" }; 
         var cut = new GetProductsHandler(_mockProductStorage.Object, mockClientStorage.Object);
         
@@ -48,199 +49,75 @@ public class GetProductsHandlerTests
         var result = cut.Handle(request).ToArray();
 
         //Assert
-        Assert.True(result.Length >= 4);
-        Assert.Equal("p03", result[0].Name);
-        Assert.Equal("p04", result[1].Name);
-        Assert.Equal("p05", result[2].Name);
-        Assert.Equal("p13", result[3].Name);
+        Assert.Equal(expectedNames.Length, result.Length);
+        
+        for (int i = 0; i < result.Length; i++)
+            Assert.Equal(expectedNames[i], result[i].Name);
     }
     
-    [Fact]
-    public void Handle_WhenPassTeenagerUnder18_ShouldGetProductsInTheRightOrder()
+    private class DataForTheoryWhenPassClientShouldGetAppropriateOrderOfProducts : IEnumerable<object[]>
     {
-        // Arrange
-        var mockClientStorage = new Mock<IClientStorage>();
-        mockClientStorage.Setup(x => x.GetClientByNameOrDefault(It.IsAny<string>()))
-            .Returns(new Client("Amy", Gender.Female, 17, "Music"));
-        var request = new IGetProductsHandler.Request { ClientName = "_" }; 
-        var cut = new GetProductsHandler(_mockProductStorage.Object, mockClientStorage.Object);
-        
-        //Act
-        var result = cut.Handle(request).ToArray();
+        public IEnumerator<object[]> GetEnumerator()
+        {
+            yield return new object[]
+            {
+                new Client("Joe", Gender.Male, 0, "Soccer"),
+                new [] { "p03", "p04", "p05", "p13", "p06", "p07", "p01", "p08", "p14" }
+            };
+            yield return new object[]
+            {
+                new Client("Joe", Gender.Male, 5, "Soccer"),
+                new [] { "p03", "p04", "p05", "p13", "p06", "p07", "p01", "p08", "p14" }
+            };
+            yield return new object[]
+            {
+                new Client("Amy", Gender.Female, 15, "Music"),
+                new [] { "p04", "p03", "p08", "p14", "p06", "p07", "p01", "p05", "p13" }
+            };
+            yield return new object[]
+            {
+                new Client("Amy", Gender.Female, 17, "Music"),
+                new [] { "p04", "p03", "p08", "p14", "p06", "p07", "p01", "p05", "p13" }
+            };
+            yield return new object[]
+            {
+                new Client("Amy", Gender.Female, 19, "Soccer"),
+                new [] { "p10", "p12", "p09", "p11" }
+            };
+            yield return new object[]
+            {
+                new Client("Bender", Gender.NotDecide, 21, "Soccer"),
+                new [] { "p09", "p10", "p11", "p12" }
+            };
+            yield return new object[]
+            {
+                new Client("Bender", Gender.NotDecide, 40, "Soccer"),
+                new [] { "p09", "p10", "p11", "p12" }
+            };
+            yield return new object[]
+            {
+                new Client("Jim", Gender.Male, 55, "Soccer"),
+                new [] { "p11", "p09", "p12", "p10" }
+            };
+            yield return new object[]
+            {
+                new Client("Jim", Gender.Male, 60, "Soccer"),
+                new [] { "p11", "p09", "p12", "p10" }
+            };
+        }
 
-        //Assert
-        Assert.True(result.Length >= 4);
-        Assert.Equal("p04", result[0].Name);
-        Assert.Equal("p03", result[1].Name);
-        Assert.Equal("p08", result[2].Name);
-        Assert.Equal("p14", result[3].Name);
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
     
-    [Fact]
-    public void Handle_WhenPassTeenagerAbove18_ShouldGetProductsInTheRightOrder()
+    
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void Handle_WhenClientNameIsNullOrEmpty_ShouldThrowException(string? name)
     {
         // Arrange
         var mockClientStorage = new Mock<IClientStorage>();
-        mockClientStorage.Setup(x => x.GetClientByNameOrDefault(It.IsAny<string>()))
-            .Returns(new Client("Amy", Gender.Female, 19, "Soccer"));
-        var request = new IGetProductsHandler.Request { ClientName = "_" }; 
-        var cut = new GetProductsHandler(_mockProductStorage.Object, mockClientStorage.Object);
-        
-        //Act
-        var result = cut.Handle(request).ToArray();
-
-        //Assert
-        Assert.True(result.Length >= 4);
-        Assert.Equal("p10", result[0].Name);
-        Assert.Equal("p12", result[1].Name);
-        Assert.Equal("p09", result[2].Name);
-        Assert.Equal("p11", result[3].Name);
-    }
-    
-    [Fact]
-    public void Handle_WhenPassAdult_ShouldGetProductsInTheRightOrder()
-    {
-        // Arrange
-        var mockClientStorage = new Mock<IClientStorage>();
-        mockClientStorage.Setup(x => x.GetClientByNameOrDefault(It.IsAny<string>()))
-            .Returns(new Client("Bender", Gender.NotDecide, 40, "Soccer"));
-        var request = new IGetProductsHandler.Request { ClientName = "_" }; 
-        var cut = new GetProductsHandler(_mockProductStorage.Object, mockClientStorage.Object);
-        
-        //Act
-        var result = cut.Handle(request).ToArray();
-
-        //Assert
-        Assert.True(result.Length >= 4);
-        Assert.Equal("p09", result[0].Name);
-        Assert.Equal("p10", result[1].Name);
-        Assert.Equal("p11", result[2].Name);
-        Assert.Equal("p12", result[3].Name);
-    }
-    
-    [Fact]
-    public void Handle_WhenPassOld_ShouldGetProductsInTheRightOrder()
-    {
-        // Arrange
-        var mockClientStorage = new Mock<IClientStorage>();
-        mockClientStorage.Setup(x => x.GetClientByNameOrDefault(It.IsAny<string>()))
-            .Returns(new Client("Jim", Gender.Male, 60, "Soccer"));
-        var request = new IGetProductsHandler.Request { ClientName = "_" }; 
-        var cut = new GetProductsHandler(_mockProductStorage.Object, mockClientStorage.Object);
-        
-        //Act
-        var result = cut.Handle(request).ToArray();
-
-        //Assert
-        Assert.True(result.Length >= 4);
-        Assert.Equal("p11", result[0].Name);
-        Assert.Equal("p09", result[1].Name);
-        Assert.Equal("p12", result[2].Name);
-        Assert.Equal("p10", result[3].Name);
-    }
-    
-    [Fact]
-    public void Handle_WhenPassAge0_ShouldGetProductsLikeForChildren()
-    {
-        // Arrange
-        var mockClientStorage = new Mock<IClientStorage>();
-        mockClientStorage.Setup(x => x.GetClientByNameOrDefault(It.IsAny<string>()))
-            .Returns(new Client("Joe", Gender.Male, 0, "Soccer"));
-        var request = new IGetProductsHandler.Request { ClientName = "_" }; 
-        var cut = new GetProductsHandler(_mockProductStorage.Object, mockClientStorage.Object);
-        
-        //Act
-        var result = cut.Handle(request).ToArray();
-
-        //Assert
-        Assert.True(result.Length >= 4);
-        Assert.Equal("p03", result[0].Name);
-        Assert.Equal("p04", result[1].Name);
-        Assert.Equal("p05", result[2].Name);
-        Assert.Equal("p13", result[3].Name);
-    }
-    
-    [Fact]
-    public void Handle_WhenPassAge15_ShouldGetProductsLikeForTeenager()
-    {
-        // Arrange
-        var mockClientStorage = new Mock<IClientStorage>();
-        mockClientStorage.Setup(x => x.GetClientByNameOrDefault(It.IsAny<string>()))
-            .Returns(new Client("Amy", Gender.Female, 17, "Music"));
-        var request = new IGetProductsHandler.Request { ClientName = "_" }; 
-        var cut = new GetProductsHandler(_mockProductStorage.Object, mockClientStorage.Object);
-        
-        //Act
-        var result = cut.Handle(request).ToArray();
-
-        //Assert
-        Assert.True(result.Length >= 4);
-        Assert.Equal("p04", result[0].Name);
-        Assert.Equal("p03", result[1].Name);
-        Assert.Equal("p08", result[2].Name);
-        Assert.Equal("p14", result[3].Name);
-    }
-    
-    [Fact]
-    public void Handle_WhenPassAge21_ShouldGetProductsLikeForAdult()
-    {
-        // Arrange
-        var mockClientStorage = new Mock<IClientStorage>();
-        mockClientStorage.Setup(x => x.GetClientByNameOrDefault(It.IsAny<string>()))
-            .Returns(new Client("Bender", Gender.NotDecide, 21, "Soccer"));
-        var request = new IGetProductsHandler.Request { ClientName = "_" }; 
-        var cut = new GetProductsHandler(_mockProductStorage.Object, mockClientStorage.Object);
-        
-        //Act
-        var result = cut.Handle(request).ToArray();
-
-        //Assert
-        Assert.True(result.Length >= 4);
-        Assert.Equal("p09", result[0].Name);
-        Assert.Equal("p10", result[1].Name);
-        Assert.Equal("p11", result[2].Name);
-        Assert.Equal("p12", result[3].Name);
-    }
-    
-    [Fact]
-    public void Handle_WhenPassAge55_ShouldGetProductsLikeForOld()
-    {
-        // Arrange
-        var mockClientStorage = new Mock<IClientStorage>();
-        mockClientStorage.Setup(x => x.GetClientByNameOrDefault(It.IsAny<string>()))
-            .Returns(new Client("Jim", Gender.Male, 55, "Soccer"));
-        var request = new IGetProductsHandler.Request { ClientName = "_" }; 
-        var cut = new GetProductsHandler(_mockProductStorage.Object, mockClientStorage.Object);
-        
-        //Act
-        var result = cut.Handle(request).ToArray();
-
-        //Assert
-        Assert.True(result.Length >= 4);
-        Assert.Equal("p11", result[0].Name);
-        Assert.Equal("p09", result[1].Name);
-        Assert.Equal("p12", result[2].Name);
-        Assert.Equal("p10", result[3].Name);
-    }
-    
-    [Fact]
-    public void Handle_WhenClientNameIsNull_ShouldThrowException()
-    {
-        // Arrange
-        var mockClientStorage = new Mock<IClientStorage>();
-        var request = new IGetProductsHandler.Request { ClientName = null }; 
-        var cut = new GetProductsHandler(_mockProductStorage.Object, mockClientStorage.Object);
-        
-        //Assert
-        Assert.Throws<ArgumentException>(() => cut.Handle(request));
-    }
-    
-    [Fact]
-    public void Handle_WhenClientNameIsEmpty_ShouldThrowException()
-    {
-        // Arrange
-        var mockClientStorage = new Mock<IClientStorage>();
-        var request = new IGetProductsHandler.Request { ClientName = "" }; 
+        var request = new IGetProductsHandler.Request { ClientName = name }; 
         var cut = new GetProductsHandler(_mockProductStorage.Object, mockClientStorage.Object);
         
         //Assert
