@@ -42,7 +42,7 @@ public class GetProductsFromStorageHandlerTests
     public void Handle_WhenThereAreProductsInRow_ShouldReturnProducts(int[] expectedIds, int address)
     {
         //Arrange
-        var request = new IGetProductsFromStorageHandler.Request { RequestType = "Row", Address = address };
+        var request = new GetProductsFromStorageRequest { RequestType = "Row", Address = address };
         var cut = new GetProductsFromStorageHandler(_mockWarehouseStorage.Object);
         
         //Act
@@ -73,7 +73,7 @@ public class GetProductsFromStorageHandlerTests
     public void Handle_WhenThereAreProductsOnShelves_ShouldReturnProducts(int[] expectedIds, int address)
     {
         //Arrange
-        var request = new IGetProductsFromStorageHandler.Request { RequestType = "Shelf", Address = address };
+        var request = new GetProductsFromStorageRequest { RequestType = "Shelf", Address = address };
         var cut = new GetProductsFromStorageHandler(_mockWarehouseStorage.Object);
         
         //Act
@@ -99,33 +99,24 @@ public class GetProductsFromStorageHandlerTests
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
     
-    [Fact]
-    public void Handle_WhenRequestTypeIsNull_ShouldThrowException()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("Rack")]
+    public void Handle_WhenRequestTypeIsNullOrWrong_ShouldThrowException(string? requestType)
     {
         //Arrange
-        var request = new IGetProductsFromStorageHandler.Request { RequestType = null, Address = 1 };
+        var request = new GetProductsFromStorageRequest { RequestType = requestType, Address = 1 };
         var cut = new GetProductsFromStorageHandler(_mockWarehouseStorage.Object);
         
         //Assert
-        Assert.Throws<ArgumentException>(() => cut.Handle(request));
-    }
-    
-    [Fact]
-    public void Handle_WhenRequestTypeIsWrong_ShouldThrowException()
-    {
-        //Arrange
-        var request = new IGetProductsFromStorageHandler.Request { RequestType = "Rack", Address = 1 };
-        var cut = new GetProductsFromStorageHandler(_mockWarehouseStorage.Object);
-        
-        //Assert
-        Assert.Throws<ArgumentException>(() => cut.Handle(request));
+        Assert.Throws<ArgumentOutOfRangeException>(() => cut.Handle(request));
     }
     
     [Fact]
     public void Handle_WhenAddressIsNull_ShouldThrowException()
     {
         //Arrange
-        var request = new IGetProductsFromStorageHandler.Request { RequestType = "Row", Address = null };
+        var request = new GetProductsFromStorageRequest { RequestType = "Row", Address = null };
         var cut = new GetProductsFromStorageHandler(_mockWarehouseStorage.Object);
         
         //Assert

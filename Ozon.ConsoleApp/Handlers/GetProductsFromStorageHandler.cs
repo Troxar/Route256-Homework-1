@@ -1,23 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
+using Ozon.ConsoleApp.Abstractions;
 using Ozon.ConsoleApp.Entities;
 using Ozon.ConsoleApp.Services;
 
 namespace Ozon.ConsoleApp.Handlers;
-
-internal interface IGetProductsFromStorageHandler
-{
-    public class Request
-    {
-        [Display(Name = "request-type")]
-        public string? RequestType { get; set; }
-        
-        [Display(Name = "address")]
-        public int? Address { get; set; }
-    }
-    
-    ICollection<Product> Handle(Request request);
-}
 
 [UsedImplicitly]
 internal sealed class GetProductsFromStorageHandler : IGetProductsFromStorageHandler
@@ -29,10 +15,10 @@ internal sealed class GetProductsFromStorageHandler : IGetProductsFromStorageHan
         _warehouseStorage = warehouseStorage;
     }
     
-    public ICollection<Product> Handle(IGetProductsFromStorageHandler.Request request)
+    public ICollection<Product> Handle(GetProductsFromStorageRequest request)
     {
         if (!Enum.TryParse<WarehouseRequestType>(request.RequestType, out var requestType))
-            throw new ArgumentException(request.RequestType, nameof(request.RequestType));
+            throw new ArgumentOutOfRangeException(nameof(request.RequestType), request.RequestType);
         
         ArgumentNullException.ThrowIfNull(request.Address);
         
@@ -46,12 +32,10 @@ internal sealed class GetProductsFromStorageHandler : IGetProductsFromStorageHan
     }
 
     private bool CompareUsingRequestType(Cell cell, WarehouseRequestType requestType, int address)
+        => requestType switch
     {
-        switch (requestType)
-        {
-            case WarehouseRequestType.Row: return cell.Address.Row == address;
-            case WarehouseRequestType.Shelf: return cell.Address.Shelf == address;
-            default: return false;
-        }
-    }
+        WarehouseRequestType.Row => cell.Address.Row == address,
+        WarehouseRequestType.Shelf => cell.Address.Shelf == address,
+        _ => false
+    };
 }

@@ -83,7 +83,7 @@ public class Commands
     {
         var customerCommand = new Command("get-products-from-storage");
 
-        customerCommand.SetRequestHandler<IGetProductsFromStorageHandler.Request>(x =>
+        customerCommand.SetRequestHandler<GetProductsFromStorageRequest>(x =>
         {
             var handler = new GetProductsFromStorageHandler(new WarehouseStorage());
             var products = handler.Handle(x);
