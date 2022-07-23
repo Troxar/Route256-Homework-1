@@ -2,6 +2,6 @@
 
 public enum WarehouseRequestType
 {
-    Row,
-    Shelf
+    Row = 0,
+    Shelf = 1
 }
