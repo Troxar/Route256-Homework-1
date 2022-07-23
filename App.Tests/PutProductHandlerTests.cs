@@ -1,6 +1,7 @@
 ﻿using AutoFixture;
 using Moq;
 using Ozon.ConsoleApp.Entities;
+using Ozon.ConsoleApp.Exceptions;
 using Ozon.ConsoleApp.Handlers;
 using Ozon.ConsoleApp.Services;
 
@@ -30,7 +31,7 @@ public class PutProductHandlerTests
     }
     
     [Fact]
-    public void Handle_WhenCellIsTaken_ShouldThrowException()
+    public void Handle_WhenCellIsOccupied_ShouldThrowException()
     {
         //Arrange
         var request = new IPutProductHandler.Request { ProductId = 1, Row = 1, Shelf = 1, Rack = 1 };
@@ -41,7 +42,7 @@ public class PutProductHandlerTests
         var cut = new PutProductHandler(_mockProductStorage.Object, _mockWarehouseStorage.Object);
         
         //Assert
-        Assert.Throws<Exception>(() => cut.Handle(request));
+        Assert.Throws<CellIsOccupiedException>(() => cut.Handle(request));
     }
     
     [Fact]
@@ -54,7 +55,7 @@ public class PutProductHandlerTests
         var cut = new PutProductHandler(_mockProductStorage.Object, _mockWarehouseStorage.Object);
         
         //Assert
-        Assert.Throws<Exception>(() => cut.Handle(request));
+        Assert.Throws<ProductNotFoundException>(() => cut.Handle(request));
     }
     
     [Theory]

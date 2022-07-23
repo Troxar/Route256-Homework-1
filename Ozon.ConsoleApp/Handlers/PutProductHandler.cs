@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using JetBrains.Annotations;
 using Ozon.ConsoleApp.Entities;
+using Ozon.ConsoleApp.Exceptions;
 using Ozon.ConsoleApp.Services;
 
 namespace Ozon.ConsoleApp.Handlers;
@@ -45,15 +46,16 @@ internal sealed class PutProductHandler : IPutProductHandler
         ArgumentNullException.ThrowIfNull(request.Row);
         ArgumentNullException.ThrowIfNull(request.Shelf);
         ArgumentNullException.ThrowIfNull(request.Rack);
-        
-        var product = _productStorage.GetProductByIdOrDefault((int)request.ProductId);
+
+        var productId = (int)request.ProductId;
+        var product = _productStorage.GetProductByIdOrDefault(productId);
         if (product == null)
-            throw new Exception("Не удалось найти продукт по идентификатору");
+            throw new ProductNotFoundException(productId);
         
         var address = new CellAddress((int)request.Row, (int)request.Shelf, (int)request.Rack);
         var cell = _warehouseStorage.GetCellByAddressOrDefault(address); 
         if (cell != null)
-            throw new Exception("Ячейка уже занята");
+            throw new CellIsOccupiedException(address);
         
         _warehouseStorage.Save(new Cell(address, product));
     }

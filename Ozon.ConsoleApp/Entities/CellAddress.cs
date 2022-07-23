@@ -12,4 +12,9 @@ public class CellAddress
         Shelf = shelf;
         Rack = rack;
     }
+
+    public override string ToString()
+    {
+        return $"{Row}-{Shelf}-{Rack}";
+    }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using Ozon.ConsoleApp.Entities;
+using Ozon.ConsoleApp.Exceptions;
 
 namespace Ozon.ConsoleApp.Services;
 
@@ -24,7 +25,7 @@ internal sealed class WarehouseStorage : IWarehouseStorage
     {
         var cell = GetCellByAddressOrDefault(address); 
         if (cell != null)
-            throw new Exception("Ячейка уже занята");
+            throw new CellIsOccupiedException(address);
         
         Save(new Cell(address, product));
     }
