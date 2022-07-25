@@ -1,4 +1,4 @@
-﻿using AutoFixture.Xunit2;
+﻿using AutoFixture;
 using Moq;
 using Ozon.ConsoleApp.Entities;
 using Ozon.ConsoleApp.Handlers;
@@ -8,11 +8,21 @@ namespace App.Tests;
 
 public class AddNewClientHandlerTests
 {
-    [Theory]
-    [AutoData]
-    public void Handle_WhenPassName_ShouldSaveClient(IAddNewClientHandler.Request request)
+    private Gender GetRandomGender()
+    {
+        Random random = new();
+        var maxValue= Enum.GetValues(typeof(Gender)).Length;
+        return (Gender)random.Next(0, maxValue);
+    }
+    
+    [Fact]
+    public void Handle_WhenPassName_ShouldSaveClient()
     {
         // Arrange
+        var request = new Fixture().Build<IAddNewClientHandler.Request>()
+            .With(x => x.Gender, GetRandomGender().ToString())
+            .Create();
+        
         var mock = new Mock<IClientStorage>();
         var cut = new AddNewClientHandler(mock.Object);
         
